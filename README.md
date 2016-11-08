@@ -130,6 +130,60 @@ This kind of aggressive compression makes some assumptions about your code. If i
 
 With `ADVANCED` compilation level Closure Compiler renames global variables, function names and properties and removes unused code. This can lead to output that will not run if your code doesn't follow certain rules.
 
+## Referencing external code
+
+If you want to use globally defined variables and functions in your code safely, you must tell the compiler about those references.
+
+*input*
+```js
+// `moment` is declared in global scope
+window.moment().subtract(10, 'days').calendar();
+```
+
+*output*
+```js
+// `moment` was renamed to `a`
+// this will not run 
+window.a().b(10, 'days').calendar();
+```
+
+## Referencing compiled code
+
+If you are about to build a library that exports to global scope, you must tell the compiler about variables that should be exported safely.
+
+*input*
+```js
+// `MY_APP` is declared in global scope
+window.MY_APP = {};
+```
+
+*output*
+```js
+// `MY_APP` was renamed to `a`
+// it's no longer possible to reference `MY_APP`
+window.a = {};
+```
+
+## Referencing to object properties using both dot and bracket notations
+
+Closure Compiler never rewrites strings. You should use only one way of declaring and accessing a property:
+- declare with a symbol, access with dot notation
+- declare with a string, access with a string
+
+*input*
+```js
+// `msg` property is declared and accessed in different ways
+obj = { msg: 'Hey!' };
+console.log(obj['msg']);
+```
+
+*output*
+```js
+// `msg` symbol is renamed to `a`, but `'msg'` text is not
+obj = { a: 'Hey!' };
+console.log(obj.msg);
+```
+
 # Compiler flags
 
 There are much more compiler flags, see all of them in [google/closure-compiler-js](https://github.com/google/closure-compiler-js#flags) repo.
