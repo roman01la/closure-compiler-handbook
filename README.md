@@ -38,6 +38,9 @@ console.log("Hello, New user!");
 - [Advanced compilation](#advanced-compilation)
 - [Flags](#flags)
 - [Supported languages](#supported-languages)
+- [JavaScript modules](#javascript-modules)
+- [Recipes](#recipes)
+  - [Exporting to global scope](#exporting-to-global-scope)
 
 # Getting started
 
@@ -63,7 +66,7 @@ const flags = {
 
 const out = compile(flags);
 
-console.info(out.compiledCode);  // will print 'var x = 3;\n'
+console.log(out.compiledCode);  // will print 'var x = 3;\n'
 ```
 
 ## Using with Webpack
@@ -172,3 +175,28 @@ In `ADVANCED_OPTIMIZATIONS` compilation level Closure Compiler renames global va
 | ES2015   | `ECMASCRIPT6`        | ✅    |        |
 | ES2015   | `ECMASCRIPT6_STRICT` | ✅    |        |
 | ES2015   | `ECMASCRIPT6_TYPED`  | ✅    |   ✅   |
+
+# JavaScript modules
+
+# Recipes
+
+## Exporting to global scope
+
+If you are building a library and not using JavaScript modules, you can export functions and variables safely using bracket notation and quoted property names, since Closure Compiler doesn't rename strings.
+
+*input*
+```js
+function logger(x) {
+  console.log('LOG:', x);
+}
+
+window['logger'] = logger;
+```
+
+*output*
+```js
+// `logger` function is exported properly into global scope
+window.logger = function(a) {
+  console.log('LOG:', a);
+};
+```
