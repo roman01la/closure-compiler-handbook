@@ -36,7 +36,7 @@ console.log("Hello, New user!");
   - [Using with Gulp](#using-with-gulp)
 - [Compilation levels](#compilation-levels)
 - [Advanced compilation](#advanced-compilation)
-- [Flags](#flags)
+- [Compiler flags](#compiler-flags)
 - [Supported languages](#supported-languages)
 - [JavaScript modules](#javascript-modules)
 - [Recipes](#recipes)
@@ -61,12 +61,12 @@ npm i google-closure-compiler-js
 const compile = require('google-closure-compiler-js').compile;
 
 const flags = {
-  jsCode: [{src: 'const x = 1 + 2;'}],
+  jsCode: [{src: 'const inc = (x) => x + 1;'}]
 };
 
 const out = compile(flags);
 
-console.log(out.compiledCode);  // will print 'var x = 3;\n'
+console.log(out.compiledCode); // 'var inc=function(a){return a+1};'
 ```
 
 ## Using with Webpack
@@ -77,20 +77,19 @@ const path = require('path');
 
 module.exports = {
   entry: [
-    path.join(__dirname, 'app.js')
+    path.join(__dirname, 'entry.js')
   ],
   output: {
-    path: path.join(__dirname, 'dist'),
-    filename: 'app.min.js'
+    path: path.join(__dirname, 'build'),
+    filename: 'bundle.js'
   },
   plugins: [
     new ClosureCompiler({
       options: {
         languageIn: 'ECMASCRIPT6',
-        languageOut: 'ECMASCRIPT5',
-        compilationLevel: 'ADVANCED',
-        warningLevel: 'VERBOSE',
-      },
+        languageOut: 'ECMASCRIPT3',
+        compilationLevel: 'ADVANCED'
+      }
     })
   ]
 };
@@ -101,69 +100,113 @@ module.exports = {
 ```js
 const compiler = require('google-closure-compiler-js').gulp();
 
-gulp.task('script', function() {
-  return gulp.src('./path/to/src.js', {base: './'})
-      // your other steps here
+gulp.task('build', function() {
+  return gulp.src('enrty.js', {base: './'})
       .pipe(compiler({
-          compilationLevel: 'SIMPLE',
-          warningLevel: 'VERBOSE',
-          outputWrapper: '(function(){\n%output%\n}).call(this)',
-          jsOutputFile: 'output.min.js',  // outputs single file
-          createSourceMap: true,
+          compilationLevel: 'ADVANCED',
+          jsOutputFile: 'bundle.js',
+          createSourceMap: true
         }))
-      .pipe(gulp.dest('./dist'));
+      .pipe(gulp.dest('./build'));
 });
 ```
 
 # Compilation levels
 
-Compilation level is compiler setting which denotes optimizations level to be applied to JavaScript code.
+Compilation level is a compiler setting which denotes optimizations level to be applied to JavaScript code.
 
 `WHITESPACE_ONLY`
 
 Removes comments, line breaks, unnecessary spaces and other whitespace.
 
-`SIMPLE_OPTIMIZATIONS` *(default)*
+`SIMPLE` *(default)*
 
 Includes `WHITESPACE_ONLY` optimizations and renames variable names to shorter names to reduce the size of output code. It renames only variables local to functions, which means that it won't break references to third party code from global scope.
 
-`ADVANCED_OPTIMIZATIONS`
+`ADVANCED`
 
-Includes `SIMPLE_OPTIMIZATIONS` optimizations and performs aggressive transformations such as closures elimination, inlining function calls, reusing variable names, pre-computing constant expressions, tree-shaking, cross-module code motion and dead code elimination.
+Includes `SIMPLE` optimizations and performs aggressive transformations such as closures elimination, inlining function calls, reusing variable names, pre-computing constant expressions, tree-shaking, cross-module code motion and dead code elimination.
 
 This kind of aggressive compression makes some assumptions about your code. If it doesn't conform to those assumptions, Closure Compiler will produce output that does not run.
 
 # Advanced compilation
 
-In `ADVANCED_OPTIMIZATIONS` compilation level Closure Compiler renames global variables, function names and properties and removes unused code. This can lead to output that will not run if your code doesn't follow certain rules.
+With `ADVANCED` compilation level Closure Compiler renames global variables, function names and properties and removes unused code. This can lead to output that will not run if your code doesn't follow certain rules.
 
-# Flags
+## Referencing external code
+
+If you want to use globally defined variables and functions in your code safely, you must tell the compiler about those references.
+
+*input*
+```js
+// `moment` is declared in global scope
+window.moment().subtract(10, 'days').calendar();
+```
+
+*output*
+```js
+// `moment` was renamed to `a`
+// this will not run
+window.a().b(10, 'days').calendar();
+```
+
+## Referencing compiled code
+
+If you are about to build a library that exports to global scope, you must tell the compiler about variables that should be exported safely.
+
+*input*
+```js
+// `MY_APP` is declared in global scope
+window.MY_APP = {};
+```
+
+*output*
+```js
+// `MY_APP` was renamed to `a`
+// it's no longer possible to reference `MY_APP`
+window.a = {};
+```
+
+## Referencing to object properties using both dot and bracket notations
+
+Closure Compiler never rewrites strings. You should use only one way of declaring and accessing a property:
+- declare with a symbol, access with dot notation
+- declare with a string, access with a string
+
+*input*
+```js
+// `msg` property is declared and accessed in different ways
+obj = { msg: 'Hey!' };
+console.log(obj['msg']);
+```
+
+*output*
+```js
+// `msg` symbol is renamed to `a`, but `'msg'` text is not
+obj = { a: 'Hey!' };
+console.log(obj.msg);
+```
+
+# Compiler flags
+
+There are much more compiler flags, see all of them in [google/closure-compiler-js](https://github.com/google/closure-compiler-js#flags) repo.
+
 | Flag                             | Default | Usage |
 |----------------------------------|---------|-------|
-| angularPass | false | Generate $inject properties for AngularJS for functions annotated with @ngInject |
-| applyInputSourceMaps | true | Compose input source maps into output source map |
-| assumeFunctionWrapper | false | Enable additional optimizations based on the assumption that the output will be wrapped with a function wrapper. This flag is used to indicate that "global" declarations will not actually be global but instead isolated to the compilation unit. This enables additional optimizations. |
-| checksOnly | false | Don't generate output. Run checks, but no optimization passes. |
-| compilationLevel | SIMPLE | Specifies the compilation level to use.<br /> Options: WHITESPACE_ONLY, SIMPLE, ADVANCED |
-| dartPass | false | |
-| defines | null | Overrides the value of variables annotated with `@define`, an object mapping names to primitive types |
-| env | BROWSER | Determines the set of builtin externs to load.<br /> Options: BROWSER, CUSTOM |
-| exportLocalPropertyDefinitions | false | |
-| generateExports | false | Generates export code for those marked with @export. |
-| languageIn | ES6 | Sets what language spec that input sources conform to. |
-| languageOut | ES5 | Sets what language spec the output should conform to. |
-| newTypeInf | false | Checks for type errors using the new type inference algorithm. |
-| outputWrapper | null | Interpolate output into this string, replacing the token `%output%` |
-| polymerPass | false | Rewrite Polymer classes to be compiler-friendly. |
-| preserveTypeAnnotations | false | |
-| processCommonJsModules | false | Process CommonJS modules to a concatenable form, i.e., support `require` statements. |
-| renamePrefixNamespace | | Specifies the name of an object that will be used to store all non-extern globals. |
-| rewritePolyfills | false | Rewrite ES6 library calls to use polyfills provided by the compiler's runtime. |
-| useTypesForOptimization | false | Enable or disable the optimizations based on available type information. Inaccurate type annotations may result in incorrect results. |
-| warningLevel | DEFAULT | Specifies the warning level to use.<br /> Options: QUIET, DEFAULT, VERBOSE |
-| jsCode | [] | Specifies the source code to compile. |
-| externs | [] | Additional externs to use for this compile. |
-| createSourceMap | false | Generates a source map mapping the generated source file back to its original sources. |
+| applyInputSourceMaps | `true` | Compose input source maps into output source map |
+| assumeFunctionWrapper | `false` | Enable additional optimizations based on the assumption that the output will be wrapped with a function wrapper. This flag is used to indicate that "global" declarations will not actually be global but instead isolated to the compilation unit. This enables additional optimizations. |
+| compilationLevel | `SIMPLE` | Specifies the compilation level to use: `WHITESPACE_ONLY`, `SIMPLE`, `ADVANCED` |
+| env | `BROWSER` | Determines the set of builtin externs to load: `BROWSER`, `CUSTOM` |
+| languageIn | `ES6` | Sets what language spec that input sources conform to. |
+| languageOut | `ES5` | Sets what language spec the output should conform to. |
+| newTypeInf | `false` | Checks for type errors using the new type inference algorithm. |
+| outputWrapper | `null` | Interpolate output into this string, replacing the token `%output%` |
+| processCommonJsModules | `false` | Process CommonJS modules to a concatenable form, i.e., support `require` statements. |
+| rewritePolyfills | `false` | Rewrite ES6 library calls to use polyfills provided by the compiler's runtime. |
+| warningLevel | `DEFAULT` | Specifies the warning level to use: `QUIET`, `DEFAULT`, `VERBOSE` |
+| jsCode | `[]` | Specifies the source code to compile. |
+| externs | `[]` | Additional externs to use for this compile. |
+| createSourceMap | `false` | Generates a source map mapping the generated source file back to its original sources. |
 
 # Supported languages
 
