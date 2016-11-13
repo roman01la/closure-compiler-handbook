@@ -36,6 +36,7 @@ console.log("Hello, New user!");
   - [Using with Gulp](#using-with-gulp)
 - [Compilation levels](#compilation-levels)
 - [Advanced compilation](#advanced-compilation)
+- [Compiler optimizations](#compiler-optimizations)
 - [Compiler flags](#compiler-flags)
 - [Supported languages](#supported-languages)
 - [JavaScript modules](#javascript-modules)
@@ -185,6 +186,184 @@ console.log(obj['msg']);
 // `msg` symbol is renamed to `a`, but `'msg'` text is not
 obj = { a: 'Hey!' };
 console.log(obj.msg);
+```
+
+# Compiler optimizations
+
+Closure Compiler performs a number of optimizations to produce a small output size. Some of them are being applied in intermediate compilation pass to produce AST which is suited best for further code optimization.
+
+## Dead code elimination and Tree-shaking
+
+“Dead code” is a code that is never going to be called in your program. Closure Compiler can efficiently determine and remove such code because it is a whole-program optimization compiler, which means that it performs analysis of the whole program (in comparison to less effective analysis on module level). It constructs a graph of all variables and dependencies which are declared in your code, does graph traversal to find what should be included and dismisses the rest, which is a dead code.
+
+## Unreachable and redundant code elimination
+
+This optimization is a little different from dead code elimination. It removes “live code” that doesn't have an impact on a program, e.g. statements without side effects (`true;`), useless `break`, `continue` and `return`.
+
+## Cross-module code motion
+
+Closure Compiler moves variables, functions and methods between modules. It moves the code along modules tree down to those modules where this code is needed. This can reduce parsing time before actual execution. This technique is especially useful for advanced code splitting which works on variables level, rather than modules level.
+
+## Constant folding
+
+> Constant folding is the process of recognizing and evaluating constant expressions at compile time rather than computing them at runtime. Terms in constant expressions are typically simple literals, such as the integer literal 2 , but they may also be variables whose values are known at compile time.
+
+*input*
+```js
+const years = 14;
+const monthsInYear = 12;
+const daysInMonth = 30;
+
+console.log(years * monthsInYear * daysInMonth);
+```
+
+*output*
+```js
+console.log(5040);
+// `years * monthsInYear * daysInMonth` computed at compile time
+// because they are known as constants
+```
+
+## Function call inlining
+
+To inline a function means to replace a function call with its body. The function definition can be dismissed and it also eliminates an additional function call. If the compiler couldn't perform this type of inlining, it can inline function declaration with a call it in place.
+
+*input*
+```js
+const person = {
+  fname: 'John',
+  lname: 'Doe',
+};
+
+function getFullName({ fname, lname }) {
+  return fname + ' ' + lname;
+}
+
+console.log(getFullName(person));
+```
+
+*output*
+```js
+var a = { a: "John", b: "Doe" };
+console.log(a.a + " " + a.b);
+```
+
+## Property flattening (collapsing)
+
+Collapsing object properties into separate variables enables such optimizations as variable renaming, inlining and better dead code removal.
+
+*input*
+```js
+const person = {
+  fname: 'John',
+  lname: 'Doe'
+};
+
+console.log(person.fname);
+```
+
+*output*
+```js
+var person$fname = "John",
+    person$lname = "Doe"; // <- is not used, can be removed
+
+console.log(person$fname);
+```
+
+## Variable and property renaming
+
+Small output size is partially achieved by renaming all variables and object properties. Because the compiler renames object properties you have to make sure that you are referencing and declaring properties either with symbol (`obj.prop`) or string (`obj['prop']`).
+
+*input*
+```js
+const user = window.session.user;
+console.log(user.apiToken, user.tokenExpireDate);
+```
+
+*output*
+```js
+var a = window.b.f;
+console.log(a.a, a.c);
+```
+
+## Statement fusion (merging) & variable declarations grouping
+
+Statement fusion tries to merge multiple statements in a single one. And variable declarations grouping groups multiple variable declarations into a single one.
+
+*input*
+```js
+const fname = 'John';
+const lname = 'Doe';
+
+if (fname) {
+  console.log(fname);
+}
+```
+
+*output*
+```js
+var fname = "John", lname = "Doe";
+fname && console.log(fname);
+```
+
+## Alternate syntax substitution
+
+Simplifies conditional expressions, replaces `if`s with ternary operator, object and array constructs with literals and simplifies `return`s.
+
+## RegExp optimization
+
+Removes unnecessary flags and reorders them for better gzip.
+
+## Known methods folding
+
+This precomputes known methods such as `join`, `indexOf`, `substring`, `substr`, `parseInt` and `parseFloat` when they are called with constants.
+
+*input*
+```js
+[0, 1, 2, 3, 4, 5].join('');
+```
+
+*output*
+```js
+"012345"
+```
+
+## Property assignment collection
+
+Looks for assignments to properties of object/array immediately following its creation using the abbreviated syntax and merges assigned values into object/array creation construct.
+
+*input*
+```js
+const coll = [];
+coll[0] = 0;
+coll[2] = 5;
+
+const obj = { x: 1 };
+
+obj.y = 2;
+```
+
+*output*
+```js
+var coll = [0, , 5], obj = { x:1, y:2 };
+```
+
+## Anonymous functions naming
+
+Gives anonymous function names. This makes it way easier to debug because debuggers and stack traces use the function names.
+
+*input*
+```js
+math.simple.add = function(a, b) {
+  return a + b;
+};
+```
+
+*output*
+```js
+math.simple.add = function $math$simple$add$(a, b) {
+  return a + b;
+};
 ```
 
 # Compiler flags
