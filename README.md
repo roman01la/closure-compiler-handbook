@@ -196,6 +196,46 @@ Closure Compiler performs a number of optimizations to produce a small output si
 
 “Dead code” is a code that is never going to be called in your program. Closure Compiler can efficiently determine and remove such code because it is a whole-program optimization compiler, which means that it performs analysis of the whole program (in comparison to less effective analysis on module level). It constructs a graph of all variables and dependencies which are declared in your code, does graph traversal to find what should be included and dismisses the rest, which is a dead code.
 
+*input*
+```js
+/* log.js module */
+export const logWithMsg = (msg, arg) => console.log(msg, arg);
+export const log = (arg) => console.log(arg);
+
+/* math.js module */
+export const min = (a, b) => Math.min(a, b);
+export const max = (a, b) => Math.max(a, b);
+export const exp = (x) => x * x;
+export const sum = (xs) => xs.reduce((a, b) => a + b, 0);
+
+/* entry.js entry point */
+import * as math from './math';
+import * as logger from './log';
+
+const nums = [0, 1, 2, 3, 4, 5];
+const msg = 'Result:';
+
+if (false) {
+  logger.log('nothing');
+} else {
+  logger.logWithMsg(msg, math.sum(nums));
+}
+```
+
+*output*
+```js
+// Even though the entire modules namespace was imported,
+// tree-shaking didn't include dependency code that is not used here.
+// Also a dead code within `if (false) { ... }` was removed.
+var c = function(a) {
+  return a.reduce(function(a, b) {
+    return a + b;
+  }, 0);
+}([0,1,2,3,4,5]);
+
+console.log("Result:",c);
+```
+
 ## Unreachable and redundant code elimination
 
 This optimization is a little different from dead code elimination. It removes “live code” that doesn't have an impact on a program, e.g. statements without side effects (`true;`), useless `break`, `continue` and `return`.
@@ -203,6 +243,48 @@ This optimization is a little different from dead code elimination. It removes �
 ## Cross-module code motion
 
 Closure Compiler moves variables, functions and methods between modules. It moves the code along modules tree down to those modules where this code is needed. This can reduce parsing time before actual execution. This technique is especially useful for advanced code splitting which works on variables level, rather than modules level.
+
+*input*
+```js
+/* math.js module */
+export const sum = (xs) => xs.reduce((a, b) => a + b, 0);
+export const mult = (xs) => xs.reduce((a, b) => a * b, 1);
+
+/* entry-1.js module */
+import * as math from './math';
+
+console.log(math.sum(nums));
+
+/* entry-2.js module */
+import * as math from './math';
+
+console.log(math.sum([4, 5, 6]) + math.mult([3, 5, 6]));
+```
+
+*output*
+```js
+/* common.js shared code */
+function c(a) {
+  return a.reduce(function(a, b) {
+    return a + b;
+  }, 0);
+};
+
+/* entry-1.bundle.js */
+console.log(c(nums)); // using shared code
+
+/* entry-2.bundle.js */
+console.log(
+  // using shared code
+  c([4,5,6]) +
+  // moved from `math.js` module
+  function(a) {
+    return a.reduce(function(a, b) {
+      return a * b;
+    }, 1);
+  }([3,5,6])
+);
+```
 
 ## Constant folding
 
