@@ -192,6 +192,8 @@ console.log(obj.msg);
 
 Closure Compiler performs a number of optimizations to produce a small output size. Some of them are being applied in intermediate compilation pass to produce AST which is suited best for further code optimization.
 
+*NOTE: Below is a list of the most interesting optimizations that compiler does. But there are more of them, you can find them all in comments in the source code of the compiler.*
+
 ## Dead code elimination and Tree-shaking
 
 “Dead code” is a code that is never going to be called in your program. Closure Compiler can efficiently determine and remove such code because it is a whole-program optimization compiler, which means that it performs analysis of the whole program (in comparison to less effective analysis on module level). It constructs a graph of all variables and dependencies which are declared in your code, does graph traversal to find what should be included and dismisses the rest, which is a dead code.
