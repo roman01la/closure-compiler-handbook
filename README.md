@@ -59,6 +59,7 @@ console.log("Hello, New user!");
 - [Recipes](#recipes-)
   - [Exporting to global scope](#exporting-to-global-scope)
   - [Code splitting](#code-splitting)
+- [Who is using it?](#who-is-using-it)
 
 # Getting started 🏁
 
@@ -527,3 +528,11 @@ window.logger = function(a) {
 ## Code splitting
 
 Code splitting is a technique used to reduce initial script loading time by splitting a program into a number of bundles that are loaded later. This is especially important for modern web apps. With code splitting you could have a separate bundle for every route in a program, so initially browser will load only minimal amount of code to run and show requested view to a user and other code can be lazy-loaded later.
+
+# Who is using it?
+
+- [ClojureScript](https://clojurescript.org/)
+- [Scala.js](https://www.scala-js.org/)
+- [Dart](https://www.dartlang.org/)
+- [GWT](http://www.gwtproject.org/)
+- [Tsickle — TypeScript to Closure Annotator](https://github.com/angular/tsickle)
