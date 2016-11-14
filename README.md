@@ -1,4 +1,4 @@
-# Introduction
+# Introduction 👋
 
 <img src="logo.png" alt="Closure Compiler handbook logo" width="322" height="114" />
 
@@ -26,7 +26,7 @@ hello('New user');
 console.log("Hello, New user!");
 ```
 
-# Table of Contents
+# Table of Contents 📖
 - [Introduction](#introduction)
 - [Table of Contents](#table-of-contents)
 - [Getting started](#getting-started)
@@ -60,7 +60,7 @@ console.log("Hello, New user!");
   - [Exporting to global scope](#exporting-to-global-scope)
   - [Code splitting](#code-splitting)
 
-# Getting started
+# Getting started 🏁
 
 Closure Compiler is written in Java, but it also has JavaScript port. Here we will use the latter.
 
@@ -129,7 +129,7 @@ gulp.task('build', function() {
 });
 ```
 
-# Compilation levels
+# Compilation levels 🎚
 
 Compilation level is a compiler setting which denotes optimizations level to be applied to JavaScript code.
 
@@ -147,7 +147,7 @@ Includes `SIMPLE` optimizations and performs aggressive transformations such as 
 
 This kind of aggressive compression makes some assumptions about your code. If it doesn't conform to those assumptions, Closure Compiler will produce output that does not run.
 
-# Advanced compilation
+# Advanced compilation 🏋️‍
 
 With `ADVANCED` compilation level Closure Compiler renames global variables, function names and properties and removes unused code. This can lead to output that will not run if your code doesn't follow certain rules.
 
@@ -205,7 +205,7 @@ obj = { a: 'Hey!' };
 console.log(obj.msg);
 ```
 
-# Compiler optimizations
+# Compiler optimizations 🎛
 
 Closure Compiler performs a number of optimizations to produce a small output size. Some of them are being applied in intermediate compilation pass to produce AST which is suited best for further code optimization.
 
@@ -467,7 +467,7 @@ math.simple.add = function $math$simple$add$(a, b) {
 };
 ```
 
-# Compiler flags
+# Compiler flags 🚩
 
 There are much more compiler flags, see all of them in [google/closure-compiler-js](https://github.com/google/closure-compiler-js#flags) repo.
 
@@ -488,7 +488,7 @@ There are much more compiler flags, see all of them in [google/closure-compiler-
 | externs | `[]` | Additional externs to use for this compile. |
 | createSourceMap | `false` | Generates a source map mapping the generated source file back to its original sources. |
 
-# Supported languages
+# Supported languages 🙊
 
 | Language | Option name          | Input | Output |
 |----------|----------------------|-------|--------|
@@ -499,9 +499,9 @@ There are much more compiler flags, see all of them in [google/closure-compiler-
 | ES2015   | `ECMASCRIPT6_STRICT` | ✅    |        |
 | ES2015   | `ECMASCRIPT6_TYPED`  | ✅    |   ✅   |
 
-# JavaScript modules
+# JavaScript modules 🌯
 
-# Recipes
+# Recipes 🍜
 
 ## Exporting to global scope
 
