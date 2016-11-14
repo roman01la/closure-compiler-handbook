@@ -147,7 +147,7 @@ Includes `SIMPLE` optimizations and performs aggressive transformations such as 
 
 This kind of aggressive compression makes some assumptions about your code. If it doesn't conform to those assumptions, Closure Compiler will produce output that does not run.
 
-# Advanced compilation 🏋️‍
+# Advanced compilation 🗜️‍
 
 With `ADVANCED` compilation level Closure Compiler renames global variables, function names and properties and removes unused code. This can lead to output that will not run if your code doesn't follow certain rules.
 
