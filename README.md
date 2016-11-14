@@ -47,7 +47,7 @@ console.log("Hello, New user!");
   - [Function call inlining](#function-call-inlining)
   - [Property flattening (collapsing)](#property-flattening-collapsing)
   - [Variable and property renaming](#variable-and-property-renaming)
-  - [Statement fusion (merging) & variable declarations grouping](#statement-fusion-merging-and-variable-declarations-grouping)
+  - [Statement fusion (merging) & variable declarations grouping](#statement-fusion-merging--variable-declarations-grouping)
   - [Alternate syntax substitution](#alternate-syntax-substitution)
   - [RegExp optimization](#regexp-optimization)
   - [Known methods folding](#known-methods-folding)
