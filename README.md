@@ -34,6 +34,7 @@ console.log("Hello, New user!");
   - [Using with Node](#using-with-node)
   - [Using with Webpack](#using-with-webpack)
   - [Using with Gulp](#using-with-gulp)
+  - [Splittable bundler](#splittable-bundler)
 - [Compilation levels](#compilation-levels-)
 - [Advanced compilation](#advanced-compilation-)
   - [Referencing external code](#referencing-external-code)
@@ -128,6 +129,27 @@ gulp.task('build', function() {
         }))
       .pipe(gulp.dest('./build'));
 });
+```
+
+## Splittable bundler
+
+[Splittable](https://github.com/cramforce/splittable) is a module bundler for JavaScript based on Closure Compiler. Basically it's a wrapper with zero configuration which supports ES6 and code splitting out of the box.
+
+```js
+const splittable = require('splittable');
+
+splittable({
+  // Create bundles from 2 entry modules `./src/a` and `./src/b`.
+  modules: ['./src/a', './src/b'],
+  writeTo: 'dist/',
+})
+.then((info) => {
+  console.info('Compilation successful');
+  if (info.warnings) {
+    console.warn(info.warnings);
+  }
+})
+.catch((error) => console.error('Compilation failed', error));
 ```
 
 # Compilation levels 🎚
