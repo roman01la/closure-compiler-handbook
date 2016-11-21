@@ -65,11 +65,11 @@ console.log("Hello, New user!");
 # Getting started 🏁
 
 Closure Compiler is written in Java, but it also has JavaScript port.
-The best way to use it is [Splittable](#https://github.com/cramforce/splittable) bundler.
+The best way to use it is [Splittable](https://github.com/cramforce/splittable) bundler.
 
 - [google/closure-compiler](https://github.com/google/closure-compiler)
 - [google/closure-compiler-js](https://github.com/google/closure-compiler-js)
-- [Splittable](#https://github.com/cramforce/splittable)
+- [Splittable](https://github.com/cramforce/splittable)
 
 ## Installation
 
