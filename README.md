@@ -10,6 +10,13 @@ This handbook is designed to help you understand how to use Closure Compiler and
 
 [Closure Compiler](https://developers.google.com/closure/compiler/) can compile, optimize and bundle JavaScript code. You can use it for building your JavaScript apps for production. It is the most advanced JavaScript optimization tool. It generates smallest bundle and emits efficient JavaScript code by doing whole program analysis and optimization, removing closures, inlining function calls, reusing variable names and pre-computing constant expressions.
 
+## React + ReactDOM build comparison
+
+Tool            | Output size | Gzipped |
+----------------|-------------|---------|
+Webpack 2       |139KB        |42KB     |
+Closure Compiler|90KB         |32KB     |
+
 Here's an example of compiler's compilation output:
 
 *input*
