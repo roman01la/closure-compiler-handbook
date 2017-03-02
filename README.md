@@ -65,6 +65,7 @@ console.log("Hello, New user!");
 - [Supported languages](#supported-languages-)
 - [JavaScript modules](#javascript-modules-)
 - [Recipes](#recipes-)
+  - [Externs](#externs)
   - [Exporting to global scope](#exporting-to-global-scope)
   - [Code splitting](#code-splitting)
 - [Who is using it?](#who-is-using-it)
@@ -200,6 +201,8 @@ window.moment().subtract(10, 'days').calendar();
 window.a().b(10, 'days').calendar();
 ```
 
+The way you do it is via _externs_. See [Externs](#externs) section for more information.
+
 ## Referencing compiled code
 
 If you are about to build a library that exports to global scope, you must tell the compiler about variables that should be exported safely.
@@ -216,6 +219,8 @@ window.MY_APP = {};
 // it's no longer possible to reference `MY_APP`
 window.a = {};
 ```
+
+This should be done by exporting symbols into global scope. See [Exporting to global scope](#exporting-to-global-scope) section for more information.
 
 ## Referencing to object properties using both dot and bracket notations
 
@@ -534,6 +539,34 @@ There are much more compiler flags, see all of them in [google/closure-compiler-
 # JavaScript modules 🌯
 
 # Recipes 🍜
+
+## Externs
+
+Extern is a JavaScript file which describes an interface of the external code. If you are going to use external function, you should declare a function with the same name, but without its body. In case when it is an object — declare an object with the same name and describe its shape by provinding property names.
+
+*input*
+```js
+// `moment` is declared in global scope
+window.moment().subtract(10, 'days').calendar();
+```
+
+*extern*
+```js
+function moment() {}
+
+moment.prototype = {
+  subtract: function() {},
+  calendar: function() {}
+};
+```
+
+*output*
+```js
+// `moment` and its prototype methods was not renamed
+window.moment().subtract(10, 'days').calendar();
+```
+
+Externs can be generated for most libraries, see [JavaScript Externs Generator](http://michaelmclellan.me/javascript-externs-generator/).
 
 ## Exporting to global scope
 
