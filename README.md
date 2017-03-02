@@ -544,6 +544,8 @@ There are much more compiler flags, see all of them in [google/closure-compiler-
 
 Extern is a JavaScript file which describes an interface of the external code. If you are going to use external function, you should declare a function with the same name, but without its body. In case when it is an object — declare an object with the same name and describe its shape by provinding property names.
 
+Once you have all of required externs, they should be passed to compiler using `--externs` flag per extern file, or as a value to `externs` property in compiler configuration if you are using a tool on top of the compiler.
+
 *input*
 ```js
 // `moment` is declared in global scope
